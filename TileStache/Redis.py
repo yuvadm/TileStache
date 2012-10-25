@@ -39,8 +39,9 @@ class Cache:
 
     def lock(self, layer, coord, format):
         key = tile_key(layer, coord, format) + '-lock'
-        expires = time() + layer.stale_lock_timeout + 1
-        timeout = time() + (layer.stale_lock_timeout * 2)
+        now = time()
+        expires = now + layer.stale_lock_timeout + 1
+        timeout = now + (layer.stale_lock_timeout * 2)
 
         while time() < timeout:
             if self.mem.setnx(key, expires):
@@ -54,7 +55,7 @@ class Cache:
                     # We found an expired lock and nobody raced us to replacing it
                     return
 
-            time.sleep(.2)
+            sleep(.2)
 
         raise Exception('Unable to acquire lock!')
 
